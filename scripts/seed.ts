@@ -81,7 +81,8 @@ export async function seed(): Promise<void> {
         [org.name, org.slug],
       );
       const orgId = rows[0]!.id;
-      // RLS applies to the seeding connection too (it isn't a superuser on managed Postgres).
+      // Set the tenant so inserts satisfy RLS even if the seeding role is bound by it
+      // (an owner with BYPASSRLS, as on Neon, or a superuser, skips RLS anyway).
       await client.query("SELECT set_config('app.org_id', $1, true)", [orgId]);
       const rand = mulberry32(org.slug.length * 7919);
       const people = [{ name: org.admin, role: 'org_admin' }, ...org.members.map((name) => ({ name, role: 'member' }))];
