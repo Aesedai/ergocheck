@@ -43,15 +43,25 @@ export interface AssessmentDetail extends AssessmentSummary {
   result: ScoringResult;
 }
 
+/**
+ * Below this many participants, health-derived aggregates are withheld: in a
+ * small group a breakdown like "1 high risk" can identify a person.
+ */
+export const MIN_GROUP_SIZE = 5;
+
 export interface OrgSummary {
   people: number;
   participants: number; // people with at least one assessment
   assessments: number;
-  averageScore: number | null;
-  /** Each participant's most recent assessment, bucketed — current state of the workforce. */
-  latestRisk: Record<RiskLevel, number>;
-  /** Average area scores across participants' latest assessments, highest risk first. */
-  areas: { area: Area; averageScore: number }[];
-  /** Assessments per month for the last 6 months (oldest first). */
-  monthly: { month: string; assessments: number; averageScore: number | null }[];
+  minGroupSize: number;
+  /** Health-derived aggregates; null while participants < minGroupSize. */
+  health: {
+    averageScore: number;
+    /** Each participant's most recent assessment, bucketed — current state of the workforce. */
+    latestRisk: Record<RiskLevel, number>;
+    /** Average area scores across participants' latest assessments, highest risk first. */
+    areas: { area: Area; averageScore: number }[];
+  } | null;
+  /** Assessments completed per month for the last 6 months (oldest first). Counts only. */
+  monthly: { month: string; assessments: number }[];
 }

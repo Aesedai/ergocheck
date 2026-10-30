@@ -199,3 +199,4 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
   .admin-grid { grid-template-columns: 1fr; }
   .area-bars li { grid-template-columns: 110px 1fr 28px; }
 }
+.notice { border-left: 4px solid var(--moderate); }
