@@ -49,7 +49,7 @@ flowchart LR
 
 1. `requireAuth` hashes the session cookie, looks up the session → user → org. The tenant comes **only** from the session — no endpoint accepts an org id.
 2. `requireRole('org_admin')` (where applicable) — RBAC is enforced on the server; the UI just hides links.
-3. `withTenant(ctx, fn)` opens a transaction, switches to the restricted `ergocheck_app` role, and sets `app.org_id`. Every query inside runs under Postgres row-level security.
+3. `withTenant(ctx, fn)` opens a transaction, switches to the restricted `ergocheck_app` role, and sets `app.org_id`. Every query inside runs under Postgres row-level security. (Even the session lookup in step 1 runs as that role, via `withAppRole()`.)
 4. Repository functions also filter by `org_id` explicitly; the audit event is written in the same transaction.
 
 | Layer | Tech |
@@ -68,7 +68,8 @@ flowchart LR
 An app-layer `WHERE org_id = ?` is necessary but not sufficient — one missed filter leaks another customer's data. So isolation is layered:
 
 - **Row-level security** on `assessments` and `audit_log`, comparing `org_id` with a per-transaction setting. `FORCE ROW LEVEL SECURITY` binds the table owner too.
-- **Restricted role.** Tenant transactions run `SET LOCAL ROLE ergocheck_app`, so RLS applies even when the connection user is a superuser (local Docker, CI).
+- **Restricted role for every app query.** The connection user is never used by application code: on Neon the owner role has `BYPASSRLS` (found in review — see [#2](https://github.com/Aesedai/ergocheck/pull/2)), and locally it's a superuser. `withTenant()` and `withAppRole()` (for the pre-tenant login/session lookups) both run `SET LOCAL ROLE ergocheck_app`, which RLS binds. `SET LOCAL` keeps this correct behind Neon's transaction-mode pooler.
+- **Lint-enforced.** `no-restricted-imports` fails CI if anything in `src/server` other than `db.ts`/`migrate.ts` touches the raw owner pool.
 - **Composite foreign key** `(user_id, org_id) → users(id, org_id)`: an assessment physically can't reference a user from a different org.
 - **Explicit filters in every repository query** as well, so intent is visible in code review.
 - **No tenant parameter** on any endpoint, and **404 rather than 403** for other tenants' records so ids can't be probed.
@@ -77,6 +78,8 @@ The tests prove it at both levels: [`tests/tenant-isolation.db.test.ts`](tests/t
 
 ### RBAC and data minimization
 Two roles: `member` and `org_admin`. Admins get **aggregates only** — participation, risk distribution by each person's latest assessment, average risk by area, monthly activity. Individual assessments include self-reported discomfort, which is personal health information, so they are visible **only to the person who took them** — admins included. A test asserts the admin summary contains no emails, user ids or answers.
+
+**Small-group suppression:** below 5 participants, health-derived figures aren't computed at all — in a team of three, "1 high risk" can identify someone. The dashboard says why; participation and activity counts still show.
 
 ### Server is authoritative
 The question set, the answer schema and the scoring function live in `src/shared` and are used by both the form and the API — one definition, no drift. But the server **re-validates and re-scores** every submission; the schema is `.strict()`, so a client-supplied `totalScore` is rejected with a 400.
@@ -88,7 +91,7 @@ The question set, the answer schema and the scoring function live in `src/shared
 Opaque 256-bit tokens in an `httpOnly`, `SameSite=Lax`, `Secure` (in production) cookie; only the SHA-256 is stored, sessions expire after 8 hours and are deleted on logout. Unknown emails and wrong passwords return the same 401 and take the same bcrypt time. Mutating endpoints accept only JSON, which a cross-site form can't send without a CORS preflight.
 
 ### Deliberately out of scope
-Password reset, SSO, email, rate limiting, small-cohort suppression on the admin dashboard, and multi-region concerns — each would be next in a production build.
+Password reset, SSO, email, login rate limiting, a per-tenant suppression threshold, and multi-region concerns — each would be next in a production build.
 
 ## Running locally
 
