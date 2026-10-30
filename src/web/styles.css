@@ -93,3 +93,36 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
   .topbar-inner { flex-wrap: wrap; gap: 8px 16px; }
   .whoami { display: none; }
 }
+
+/* Risk */
+.risk { display: inline-block; font-size: 0.8rem; font-weight: 700; padding: 3px 10px; border-radius: 999px; white-space: nowrap; }
+.risk-low { background: var(--low-soft); color: var(--low); }
+.risk-moderate { background: var(--moderate-soft); color: var(--moderate); }
+.risk-high { background: var(--high-soft); color: var(--high); }
+
+/* Results */
+.results { display: grid; gap: 16px; }
+.score-card { display: grid; grid-template-columns: auto 1fr; gap: 28px; align-items: center; }
+.score-card { --ring: var(--low); }
+.score-moderate { --ring: var(--moderate); }
+.score-high { --ring: var(--high); }
+.score-ring { width: 132px; height: 132px; border-radius: 50%; display: grid; place-content: center; text-align: center;
+  background: radial-gradient(closest-side, var(--surface) 78%, transparent 79%), conic-gradient(var(--ring) var(--pct), var(--border) 0); }
+.score-num { font-size: 2.4rem; font-weight: 800; line-height: 1; color: var(--ring); }
+.score-of { font-size: 0.8rem; color: var(--muted); }
+.score-summary { margin: 10px 0 6px; font-size: 1.05rem; }
+.area-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.area-grid .card + .card { margin-top: 0; }
+.area-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.area-head h3 { margin: 0; }
+.bar { height: 8px; background: var(--border); border-radius: 999px; margin: 12px 0 14px; overflow: hidden; }
+.bar-fill { display: block; height: 100%; border-radius: 999px; }
+.bar-low { background: var(--low); }
+.bar-moderate { background: var(--moderate); }
+.bar-high { background: var(--high); }
+.tips { margin: 0; padding-left: 18px; display: grid; gap: 6px; font-size: 0.92rem; }
+
+@media (max-width: 600px) {
+  .score-card { grid-template-columns: 1fr; justify-items: start; gap: 16px; }
+  .area-grid { grid-template-columns: 1fr; }
+}
