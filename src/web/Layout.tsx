@@ -15,6 +15,8 @@ export function Layout() {
           </NavLink>
           <nav className="nav">
             <NavLink to="/" end>Home</NavLink>
+            <NavLink to="/assess">Assess</NavLink>
+            <NavLink to="/history">History</NavLink>
           </nav>
           <div className="whoami">
             <span className="whoami-name">{me.user.displayName}</span>

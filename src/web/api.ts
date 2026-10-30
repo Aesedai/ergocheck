@@ -1,4 +1,5 @@
-import type { LoginRequest, Me } from '../shared/api';
+import type { AssessmentDetail, AssessmentSummary, LoginRequest, Me } from '../shared/api';
+import type { Answers } from '../shared/scoring';
 
 export class HttpError extends Error {
   constructor(
@@ -26,4 +27,7 @@ export const api = {
   me: () => request<Me>('GET', '/api/auth/me'),
   login: (body: LoginRequest) => request<Me>('POST', '/api/auth/login', body),
   logout: () => request<{ ok: true }>('POST', '/api/auth/logout', {}),
+  submitAssessment: (answers: Answers) => request<AssessmentDetail>('POST', '/api/assessments', { answers }),
+  listAssessments: () => request<AssessmentSummary[]>('GET', '/api/assessments'),
+  getAssessment: (id: string) => request<AssessmentDetail>('GET', `/api/assessments/${encodeURIComponent(id)}`),
 };

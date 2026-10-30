@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { AnswersSchema, type Answers, type RiskLevel, type ScoringResult } from './scoring.js';
 import { ROLES } from './types.js';
 
 // Request/response contracts shared by the API (validation) and the web
@@ -25,4 +26,18 @@ export type Me = z.infer<typeof Me>;
 export interface ApiError {
   error: string;
   details?: unknown;
+}
+
+export const SubmitAssessmentRequest = z.object({ answers: AnswersSchema }).strict();
+
+export interface AssessmentSummary {
+  id: string;
+  totalScore: number;
+  riskLevel: RiskLevel;
+  createdAt: string;
+}
+
+export interface AssessmentDetail extends AssessmentSummary {
+  answers: Answers;
+  result: ScoringResult;
 }
