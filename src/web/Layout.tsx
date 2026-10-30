@@ -17,6 +17,7 @@ export function Layout() {
             <NavLink to="/" end>Home</NavLink>
             <NavLink to="/assess">Assess</NavLink>
             <NavLink to="/history">History</NavLink>
+            {me.user.role === 'org_admin' && <NavLink to="/admin">Organization</NavLink>}
           </nav>
           <div className="whoami">
             <span className="whoami-name">{me.user.displayName}</span>

@@ -22,9 +22,9 @@ interface SeedOrg {
 }
 
 export const SEED_ORGS: SeedOrg[] = [
-  { name: 'Harbor & Pine Insurance', slug: 'harbor-pine', domain: 'harborpine.example', admin: 'Dana Okafor', members: ['Alex Rivera', 'Priya Natarajan', 'Sam Whitfield', 'Mei Chen'], riskiness: 0.5 },
-  { name: 'Cobalt Freight Co.', slug: 'cobalt-freight', domain: 'cobaltfreight.example', admin: 'Luis Ortega', members: ['Jordan Blake', 'Aisha Mensah', 'Tom Kowalski'], riskiness: 0.8 },
-  { name: 'Meridian Dental Group', slug: 'meridian-dental', domain: 'meridiandental.example', admin: 'Grace Lindqvist', members: ['Ravi Patel', 'Hannah Moore'], riskiness: 0.35 },
+  { name: 'Harbor & Pine Insurance', slug: 'harbor-pine', domain: 'harborpine.example', admin: 'Dana Okafor', members: ['Alex Rivera', 'Priya Natarajan', 'Sam Whitfield', 'Mei Chen', 'Lena Fischer'], riskiness: 0.5 },
+  { name: 'Cobalt Freight Co.', slug: 'cobalt-freight', domain: 'cobaltfreight.example', admin: 'Luis Ortega', members: ['Jordan Blake', 'Aisha Mensah', 'Tom Kowalski', 'Nina Alvarez', 'Owen Price'], riskiness: 0.8 },
+  { name: 'Meridian Dental Group', slug: 'meridian-dental', domain: 'meridiandental.example', admin: 'Grace Lindqvist', members: ['Ravi Patel', 'Hannah Moore', 'Carlos Mendes', 'Fatima Rahman', 'Ben Adler'], riskiness: 0.35 },
 ];
 
 const emailFor = (name: string, domain: string) => `${name.split(' ')[0]!.toLowerCase()}@${domain}`;
@@ -54,8 +54,8 @@ function randomAnswers(rand: () => number, riskiness: number): Answers {
 
 async function insertAssessments(tx: Tx, orgId: string, userId: string, count: number, rand: () => number, riskiness: number) {
   for (let i = 0; i < count; i++) {
-    // Spread over the last ~90 days, oldest first, each one a little better than the last.
-    const daysAgo = Math.round(((count - i) / count) * 85 + rand() * 5);
+    // Spread over the last ~6 months, oldest first, each one a little better than the last.
+    const daysAgo = Math.round(((count - 1 - i) / count) * 165 + 1 + rand() * 20);
     const answers = randomAnswers(rand, Math.max(0.05, riskiness - i * 0.08));
     const r = scoreAssessment(answers);
     await tx.query(
