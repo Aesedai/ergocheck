@@ -1,5 +1,5 @@
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { closePool, withTenant, type TenantContext } from '../src/server/db.js';
+import { closePool, withAppRole, withTenant, type TenantContext } from '../src/server/db.js';
 import { insertOrg, insertUser, resetDb } from './helpers/db.js';
 
 // These tests deliberately issue queries WITHOUT an org_id filter: the point
@@ -71,5 +71,10 @@ describe('row-level tenant isolation', () => {
         ),
       ),
     ).rejects.toThrow(/foreign key/);
+  });
+
+  it('returns no tenant rows to app-role queries made without a tenant', async () => {
+    const rows = await withAppRole(async (tx) => (await tx.query('SELECT * FROM assessments')).rows);
+    expect(rows).toHaveLength(0);
   });
 });

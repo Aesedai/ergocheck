@@ -17,9 +17,11 @@ export default tseslint.config(
     },
   },
   {
-    // Tenant-scoped code must go through withTenant(), which sets the org for
-    // row-level security. A raw pool query from here would run without it.
-    files: ['src/server/routes/**/*.ts', 'src/server/repos/**/*.ts'],
+    // App code must query through withTenant() / withAppRole(), which run as
+    // the restricted role that row-level security binds. The raw pool connects
+    // as the owner, which may bypass RLS entirely (e.g. BYPASSRLS on Neon).
+    files: ['src/server/**/*.ts'],
+    ignores: ['src/server/db.ts', 'src/server/migrate.ts'],
     rules: {
       'no-restricted-imports': [
         'error',
@@ -28,7 +30,7 @@ export default tseslint.config(
             {
               group: ['**/db.js'],
               importNames: ['getPool'],
-              message: 'Use withTenant() for tenant data; only auth/migrate/seed may use the raw pool.',
+              message: 'Use withTenant() or withAppRole(); the raw pool may bypass row-level security.',
             },
           ],
         },
