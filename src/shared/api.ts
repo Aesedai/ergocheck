@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import type { Area } from './questions.js';
 import { AnswersSchema, type Answers, type RiskLevel, type ScoringResult } from './scoring.js';
 import { ROLES } from './types.js';
 
@@ -40,4 +41,17 @@ export interface AssessmentSummary {
 export interface AssessmentDetail extends AssessmentSummary {
   answers: Answers;
   result: ScoringResult;
+}
+
+export interface OrgSummary {
+  people: number;
+  participants: number; // people with at least one assessment
+  assessments: number;
+  averageScore: number | null;
+  /** Each participant's most recent assessment, bucketed — current state of the workforce. */
+  latestRisk: Record<RiskLevel, number>;
+  /** Average area scores across participants' latest assessments, highest risk first. */
+  areas: { area: Area; averageScore: number }[];
+  /** Assessments per month for the last 6 months (oldest first). */
+  monthly: { month: string; assessments: number; averageScore: number | null }[];
 }

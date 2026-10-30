@@ -1,5 +1,6 @@
 import cookie from '@fastify/cookie';
 import Fastify, { type FastifyInstance } from 'fastify';
+import { adminRoutes } from './routes/admin.js';
 import { assessmentRoutes } from './routes/assessments.js';
 import { authRoutes } from './routes/auth.js';
 import { ValidationError } from './validate.js';
@@ -22,6 +23,7 @@ export function buildApp(): FastifyInstance {
   app.get('/api/health', async () => ({ ok: true }));
   app.register(authRoutes);
   app.register(assessmentRoutes);
+  app.register(adminRoutes);
 
   return app;
 }
