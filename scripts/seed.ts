@@ -54,8 +54,8 @@ function randomAnswers(rand: () => number, riskiness: number): Answers {
 
 async function insertAssessments(tx: Tx, orgId: string, userId: string, count: number, rand: () => number, riskiness: number) {
   for (let i = 0; i < count; i++) {
-    // Spread over the last ~90 days, oldest first, each one a little better than the last.
-    const daysAgo = Math.round(((count - i) / count) * 85 + rand() * 5);
+    // Spread over the last ~6 months, oldest first, each one a little better than the last.
+    const daysAgo = Math.round(((count - 1 - i) / count) * 165 + 1 + rand() * 20);
     const answers = randomAnswers(rand, Math.max(0.05, riskiness - i * 0.08));
     const r = scoreAssessment(answers);
     await tx.query(
