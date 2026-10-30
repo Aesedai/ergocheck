@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../auth';
+import { ThemeToggle } from '../theme';
 
 const DEMO_PASSWORD = 'ergocheck-demo';
 const DEMO_ACCOUNTS = [
@@ -33,6 +34,7 @@ export function LoginPage() {
 
   return (
     <div className="auth-layout">
+      <ThemeToggle className="auth-theme" />
       <section className="auth-hero">
         <div className="brand brand-lg">
           <span className="brand-mark" aria-hidden>✓</span> ErgoCheck
