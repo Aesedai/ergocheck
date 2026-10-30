@@ -16,7 +16,8 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "db:migrate": "tsx --env-file-if-exists=.env scripts/migrate.ts",
-    "db:seed": "tsx --env-file-if-exists=.env scripts/seed.ts"
+    "db:seed": "tsx --env-file-if-exists=.env scripts/seed.ts",
+    "build:vercel": "vite build && tsx scripts/build-vercel.ts"
   },
   "dependencies": {
     "@fastify/cookie": "^11.1.5",
@@ -36,6 +37,7 @@
     "@types/react-dom": "^19.3.0",
     "@vercel/node": "^29.0.0",
     "@vitejs/plugin-react": "^6.1.2",
+    "esbuild": "^0.28.2",
     "eslint": "^10.13.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "globals": "^17.13.0",
