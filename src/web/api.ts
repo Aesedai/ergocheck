@@ -1,4 +1,4 @@
-import type { AssessmentDetail, AssessmentSummary, LoginRequest, Me, OrgSummary } from '../shared/api';
+import type { AssessmentDetail, AssessmentSummary, AuditEvent, LoginRequest, Me, OrgSummary } from '../shared/api';
 import type { Answers } from '../shared/scoring';
 
 export class HttpError extends Error {
@@ -31,4 +31,5 @@ export const api = {
   listAssessments: () => request<AssessmentSummary[]>('GET', '/api/assessments'),
   getAssessment: (id: string) => request<AssessmentDetail>('GET', `/api/assessments/${encodeURIComponent(id)}`),
   orgSummary: () => request<OrgSummary>('GET', '/api/admin/summary'),
+  auditLog: () => request<AuditEvent[]>('GET', '/api/admin/audit'),
 };

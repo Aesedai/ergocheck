@@ -65,3 +65,12 @@ export interface OrgSummary {
   /** Assessments completed per month for the last 6 months (oldest first). Counts only. */
   monthly: { month: string; assessments: number }[];
 }
+
+/** Audit events as shown to org admins: who did what and when — never assessment content. */
+export interface AuditEvent {
+  id: string;
+  action: string;
+  entityType: string | null;
+  actorName: string | null;
+  createdAt: string;
+}

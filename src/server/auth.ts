@@ -26,14 +26,18 @@ declare module 'fastify' {
 
 const hashToken = (token: string) => createHash('sha256').update(token).digest('hex');
 
-export async function verifyCredentials(email: string, password: string): Promise<string | null> {
-  const { rows } = await withAppRole((tx) => tx.query<{ id: string; password_hash: string }>(
-    'SELECT id, password_hash FROM users WHERE lower(email) = lower($1)',
+/** Checks a password. `account` is set whenever the email matched, so failures can be audited in that org. */
+export async function verifyCredentials(
+  email: string,
+  password: string,
+): Promise<{ ok: boolean; account?: { userId: string; orgId: string } }> {
+  const { rows } = await withAppRole((tx) => tx.query<{ id: string; org_id: string; password_hash: string }>(
+    'SELECT id, org_id, password_hash FROM users WHERE lower(email) = lower($1)',
     [email],
   ));
   const user = rows[0];
   const ok = await bcrypt.compare(password, user?.password_hash ?? DUMMY_HASH);
-  return ok && user ? user.id : null;
+  return { ok: ok && !!user, account: user && { userId: user.id, orgId: user.org_id } };
 }
 
 /** Creates a session and returns the raw token for the cookie. Only its hash is stored. */
