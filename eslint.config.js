@@ -16,4 +16,25 @@ export default tseslint.config(
       '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
     },
   },
+  {
+    // App code must query through withTenant() / withAppRole(), which run as
+    // the restricted role that row-level security binds. The raw pool connects
+    // as the owner, which may bypass RLS entirely (e.g. BYPASSRLS on Neon).
+    files: ['src/server/**/*.ts'],
+    ignores: ['src/server/db.ts', 'src/server/migrate.ts'],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['**/db.js'],
+              importNames: ['getPool'],
+              message: 'Use withTenant() or withAppRole(); the raw pool may bypass row-level security.',
+            },
+          ],
+        },
+      ],
+    },
+  },
 );
