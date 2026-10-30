@@ -6,5 +6,6 @@ export default defineConfig({
     // DB-backed tests share one database; run files serially.
     fileParallelism: false,
     passWithNoTests: true,
+    globalSetup: ['tests/global-setup.ts'],
   },
 });

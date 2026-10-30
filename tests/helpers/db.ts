@@ -1,8 +1,6 @@
 import { getPool } from '../../src/server/db.js';
 import { migrate } from '../../src/server/migrate.js';
 
-process.env.DATABASE_URL ??= 'postgres://postgres:postgres@localhost:5432/ergocheck';
-
 /** Drops and recreates the public schema, then applies all migrations. */
 export async function resetDb(): Promise<void> {
   const pool = getPool();
