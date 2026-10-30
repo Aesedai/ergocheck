@@ -6,7 +6,11 @@ import { authRoutes } from './routes/auth.js';
 import { ValidationError } from './validate.js';
 
 export function buildApp(): FastifyInstance {
-  const app = Fastify({ logger: process.env.NODE_ENV !== 'test' });
+  const app = Fastify({
+    logger: process.env.NODE_ENV !== 'test',
+    // Behind Vercel's proxy, take the client IP (for the audit log) from X-Forwarded-For.
+    trustProxy: !!process.env.VERCEL,
+  });
 
   app.register(cookie);
 
