@@ -41,6 +41,11 @@ CREATE TABLE users (
 );
 CREATE UNIQUE INDEX users_email_lower_idx ON users (lower(email));
 
+-- No RLS on sessions (or users), deliberately: these are read to *establish*
+-- the tenant. A request arrives with only a cookie; the session lookup is what
+-- tells us the user and org, so there is no app.org_id to filter by yet. They
+-- are read only by the auth module (src/server/auth.ts), never by tenant-scoped
+-- routes. Any table holding tenant *data* gets RLS like assessments below.
 CREATE TABLE sessions (
   -- SHA-256 of the opaque cookie token; the raw token is never stored.
   token_hash text PRIMARY KEY,
