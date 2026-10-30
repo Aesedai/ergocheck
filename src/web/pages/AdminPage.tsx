@@ -4,6 +4,7 @@ import { AREA_LABELS } from '../../shared/questions';
 import { riskLevelFor, type RiskLevel } from '../../shared/scoring';
 import { api } from '../api';
 import { useAuth } from '../auth';
+import { AuditLog } from '../components/AuditLog';
 import { RiskBadge } from '../components/RiskBadge';
 import { useFetch } from '../useFetch';
 
@@ -29,7 +30,12 @@ function AdminDashboard({ orgName }: { orgName: string }) {
       </header>
       {loading && <p className="muted">Loading…</p>}
       {error && <p className="form-error">{error.message}</p>}
-      {data && <Dashboard s={data} />}
+      {data && (
+        <div className="admin">
+          <Dashboard s={data} />
+          <AuditLog />
+        </div>
+      )}
     </>
   );
 }

@@ -58,10 +58,18 @@ async function insertAssessments(tx: Tx, orgId: string, userId: string, count: n
     const daysAgo = Math.round(((count - 1 - i) / count) * 165 + 1 + rand() * 20);
     const answers = randomAnswers(rand, Math.max(0.05, riskiness - i * 0.08));
     const r = scoreAssessment(answers);
-    await tx.query(
+    // A slightly different time of day per assessment, so the audit trail reads naturally.
+    const { rows } = await tx.query<{ id: string }>(
       `INSERT INTO assessments (org_id, user_id, answers, area_scores, total_score, risk_level, created_at)
-       VALUES ($1, $2, $3, $4, $5, $6, now() - make_interval(days => $7))`,
-      [orgId, userId, JSON.stringify(answers), JSON.stringify(r.areas), r.totalScore, r.riskLevel, daysAgo],
+       VALUES ($1, $2, $3, $4, $5, $6, now() - make_interval(days => $7, mins => $8)) RETURNING id`,
+      [orgId, userId, JSON.stringify(answers), JSON.stringify(r.areas), r.totalScore, r.riskLevel, daysAgo, Math.floor(rand() * 600)],
+    );
+    // Matching audit history, as the API would have written it.
+    await tx.query(
+      `INSERT INTO audit_log (org_id, actor_id, action, entity_type, entity_id, metadata, created_at)
+       SELECT org_id, user_id, 'assessment.create', 'assessment', id::text, jsonb_build_object('riskLevel', risk_level), created_at
+         FROM assessments WHERE id = $1`,
+      [rows[0]!.id],
     );
   }
 }
@@ -74,7 +82,8 @@ export async function seed(): Promise<void> {
   const client = await pool.connect();
   try {
     await client.query('BEGIN');
-    await client.query('TRUNCATE organizations, users, sessions, assessments CASCADE');
+    // Owner-only reset: the app role has no TRUNCATE, and audit_log rejects row-level deletes.
+    await client.query('TRUNCATE organizations, users, sessions, assessments, audit_log CASCADE');
     for (const org of SEED_ORGS) {
       const { rows } = await client.query<{ id: string }>(
         'INSERT INTO organizations (name, slug) VALUES ($1, $2) RETURNING id',

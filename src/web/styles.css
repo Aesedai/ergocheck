@@ -200,3 +200,7 @@ input:focus-visible, select:focus-visible, button:focus-visible, a:focus-visible
   .area-bars li { grid-template-columns: 110px 1fr 28px; }
 }
 .notice { border-left: 4px solid var(--moderate); }
+.table-card-head { padding: 20px 20px 8px; }
+.table-card-head p { margin: 0; }
+.pad { padding: 0 20px 20px; }
+.nowrap { white-space: nowrap; }
