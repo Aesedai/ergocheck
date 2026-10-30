@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { Me } from '../shared/api.js';
 import type { Role } from '../shared/types.js';
-import { getPool, type TenantContext } from './db.js';
+import { withAppRole, type TenantContext } from './db.js';
 
 export const SESSION_COOKIE = 'ec_session';
 const SESSION_TTL_MS = 8 * 60 * 60 * 1000;
@@ -27,10 +27,10 @@ declare module 'fastify' {
 const hashToken = (token: string) => createHash('sha256').update(token).digest('hex');
 
 export async function verifyCredentials(email: string, password: string): Promise<string | null> {
-  const { rows } = await getPool().query<{ id: string; password_hash: string }>(
+  const { rows } = await withAppRole((tx) => tx.query<{ id: string; password_hash: string }>(
     'SELECT id, password_hash FROM users WHERE lower(email) = lower($1)',
     [email],
-  );
+  ));
   const user = rows[0];
   const ok = await bcrypt.compare(password, user?.password_hash ?? DUMMY_HASH);
   return ok && user ? user.id : null;
@@ -40,20 +40,18 @@ export async function verifyCredentials(email: string, password: string): Promis
 export async function createSession(userId: string): Promise<{ token: string; expiresAt: Date }> {
   const token = randomBytes(32).toString('base64url');
   const expiresAt = new Date(Date.now() + SESSION_TTL_MS);
-  await getPool().query('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES ($1, $2, $3)', [
-    hashToken(token),
-    userId,
-    expiresAt,
-  ]);
+  await withAppRole((tx) =>
+    tx.query('INSERT INTO sessions (token_hash, user_id, expires_at) VALUES ($1, $2, $3)', [hashToken(token), userId, expiresAt]),
+  );
   return { token, expiresAt };
 }
 
 export async function destroySession(token: string): Promise<void> {
-  await getPool().query('DELETE FROM sessions WHERE token_hash = $1', [hashToken(token)]);
+  await withAppRole((tx) => tx.query('DELETE FROM sessions WHERE token_hash = $1', [hashToken(token)]));
 }
 
 export async function userForSession(token: string): Promise<AuthedUser | null> {
-  const { rows } = await getPool().query<{
+  const { rows } = await withAppRole((tx) => tx.query<{
     user_id: string;
     org_id: string;
     role: Role;
@@ -67,7 +65,7 @@ export async function userForSession(token: string): Promise<AuthedUser | null> 
        JOIN organizations o ON o.id = u.org_id
       WHERE s.token_hash = $1 AND s.expires_at > now()`,
     [hashToken(token)],
-  );
+  ));
   const r = rows[0];
   if (!r) return null;
   return {
